@@ -21,9 +21,9 @@ def op_craft_wooden_axe_at_bench (state, ID):
 # your code here
 # --- IAN ---
 def op_craft_plank (state, ID):
-	if state.time[ID] >= 1 and state.plank[ID] >= 1:
-		state.plank[ID] += 1
-		state.wood[ID] -= 4
+	if state.time[ID] >= 1 and state.wood[ID] >= 1:
+		state.plank[ID] += 4
+		state.wood[ID] -= 1
 		state.time[ID] -= 1
 	return False
 # -----------
