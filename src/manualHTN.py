@@ -19,8 +19,18 @@ def op_craft_wooden_axe_at_bench (state, ID):
 	return False
 
 # your code here
+# --- IAN ---
+def op_craft_plank (state, ID):
+	if state.time[ID] >= 1 and state.plank[ID] >= 1:
+		state.plank[ID] += 1
+		state.wood[ID] -= 4
+		state.time[ID] -= 1
+	return False
+# -----------
 
-pyhop.declare_operators (op_punch_for_wood, op_craft_wooden_axe_at_bench)
+
+pyhop.declare_operators (op_punch_for_wood, op_craft_wooden_axe_at_bench, \
+	op_craft_plank)
 
 '''end operators'''
 
@@ -35,6 +45,14 @@ def produce (state, ID, item):
 	if item == 'wood': 
 		return [('produce_wood', ID)]
 	# your code here
+	# --- IAN ---
+	elif item == 'plank':
+		if state.made_plank[ID] is True:
+			return False
+		else:
+			state.made_plank[ID] is True
+		return [('produce_plank', ID)]
+	# -----------
 	elif item == 'wooden_axe':
 		# this check to make sure we're not making multiple axes
 		if state.made_wooden_axe[ID] is True:
@@ -71,9 +89,13 @@ state.time = {'agent': 4}
 state.wooden_axe = {'agent': 0}
 state.made_wooden_axe = {'agent': False}
 # your code here 
+# --- IAN ---
+state.plank = {'agent': 0}
+state.made_plank = {'agent': False}
+# -----------
 
-# pyhop.print_operators()
-# pyhop.print_methods()
+pyhop.print_operators()
+pyhop.print_methods()
 
 pyhop.pyhop(state, [('have_enough', 'agent', 'wood', 1)], verbose=3)
 # pyhop.pyhop(state, [('have_enough', 'agent', 'wood', 12)], verbose=3)
