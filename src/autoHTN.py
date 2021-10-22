@@ -31,15 +31,64 @@ def declare_methods (data):
 	pass			
 
 def make_operator (rule):
+	#print(rule)
+	#for element in rule:
+		#print("Element:", element)
+		#for item in rule[element]:
+			#print("Item:", item)
+			#print("Value:", rule[element][item])
 	def operator (state, ID):
 		# your code here
-		pass
+		for element in rule:
+			if element == 'Produces':
+				item = rule[element]
+				value = rule[element][item]
+				if not state[item][ID]:
+					setattr(state, state[item][ID], value)
+				else:
+					setattr(state, state[item][ID], getattr(state, item[ID]) + value)
+			elif element == 'Requires':
+				for item in rule[element]:
+					value = rule[element][item]
+					if not state[item][ID]:
+						setattr(state, state[item][ID], 0)
+					if getattr(state, state[item][ID]) >= value:
+						setattr(state, state[item][ID], value)
+					else:
+						return False
+
+			elif element == 'Consumes':
+				for item in rule[element]:
+					value = rule[element][item]
+					if not state[item][ID]:
+						setattr(state, state[item][ID], 0)
+					if getattr(state, state[item][ID]) >= value:
+						setattr(state, state[item][ID], getattr(state, item[ID]) - value)
+					else:
+						return False
+			elif element == "Time":
+				value = rule[element]
+				if getattr(state, state[item][ID]) >= value:
+					setattr(state, state[item][ID], getattr(state, item[ID]) - value)
+				else:
+					return False
+		
+		return state
 	return operator
 
 def declare_operators (data):
 	# your code here
 	# hint: call make_operator, then declare the operator to pyhop using pyhop.declare_operators(o1, o2, ..., ok)
-	pass
+	ops = []
+	for element in data["Recipes"]:
+		holder = make_operator(data["Recipes"][element])
+		print(holder)
+		ops.append(holder)
+	print(len(ops))
+	for op in ops:
+		print(op)
+	pyhop.declare_operators(op for op in ops)
+	return
 
 def add_heuristic (data, ID):
 	# prune search branch if heuristic() returns True
@@ -79,7 +128,7 @@ if __name__ == '__main__':
 
 	with open(rules_filename) as f:
 		data = json.load(f)
-
+	#print(data)
 	state = set_up_state(data, 'agent', time=239) # allot time here
 	goals = set_up_goals(data, 'agent')
 
@@ -87,8 +136,8 @@ if __name__ == '__main__':
 	declare_methods(data)
 	add_heuristic(data, 'agent')
 
-	# pyhop.print_operators()
-	# pyhop.print_methods()
+	pyhop.print_operators()
+	#pyhop.print_methods()
 
 	# Hint: verbose output can take a long time even if the solution is correct; 
 	# try verbose=1 if it is taking too long
