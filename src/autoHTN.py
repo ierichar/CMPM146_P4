@@ -16,10 +16,19 @@ def produce (state, ID, item):
 pyhop.declare_methods ('produce', produce)
 
 def make_method (name, rule):
+	subTasks = []
 	def method (state, ID):
 		# your code here
-		pass
-
+		for prereq in rule["Recipes"][name]:
+			if prereq == "Requires":
+				reqItem = rule["Recipes"][name][prereq]
+				subTasks.append(('have_enough', ID, rule["Recipes"][name][prereq], rule["Recipes"][name][prereq][reqItem]))
+			if prereq == "Consumes":
+				for item in rule["Recipes"][name][prereq]:
+					subTasks.append(('have_enough', ID, rule["Recipes"][name][prereq], rule["Recipes"][name][prereq][item]))
+		subTasks.append(('op_'+name, ID))
+		return
+		
 	return method
 
 def declare_methods (data):
@@ -27,19 +36,41 @@ def declare_methods (data):
 	# sort the recipes so that faster recipes go first
 
 	# your code here
-	# hint: call make_method, then declare the method to pyhop using pyhop.declare_methods('foo', m1, m2, ..., mk)	
-	pass			
+	# hint: call make_method, then declare the method to pyhop using pyhop.declare_methods('foo', m1, m2, ..., mk)
+	methods = []
+	for item in data["Items"]:
+		name = None
+		for recipe in data["Recipes"]:
+			for category in data["Recipes"][recipe]:
+				if category == "Produces":
+					if item == next(iter(data["Recipes"][recipe][category])):
+						#print(item)
+						newMethod = make_method(recipe, data)
+						newMethod.__name__ = "craft_"+item
+						methods.append(newMethod)
+		name = "produce_" + item
+		pyhop.declare_methods(name, *methods)
+		methods.clear()
+	
+	for tool in data["Tools"]:
+		name = None
+		for recipe in data["Recipes"]:
+			for category in data["Recipes"][recipe]:
+				if category == "Produces":
+					if tool == next(iter(data["Recipes"][recipe][category])):
+						#print(item)
+						newMethod = make_method(recipe, data)
+						newMethod.__name__ = "craft_"+tool
+						methods.append(newMethod)
+		name = "produce_" + tool
+		pyhop.declare_methods(name, *methods)
+		methods.clear()
+	return
 
 def make_operator (rule):
-	#print(rule)
-	#for element in rule:
-		#print("Element:", element)
-		#for item in rule[element]:
-			#print("Item:", item)
-			#print("Value:", rule[element][item])
 	def operator (state, ID):
 		# your code here
-		function.__name__ = "op_" + rule
+		#function.__name__ = "op_" + rule
 		for element in rule:
 			if element == 'Produces':
 				item = rule[element]
@@ -84,9 +115,7 @@ def declare_operators (data):
 	for element in data["Recipes"]:
 		holder = make_operator(data["Recipes"][element])
 		holder.__name__ = "op_" + element
-		print(holder.__name__)
 		ops.append(holder)
-	#print(len(ops))
 	pyhop.declare_operators(*ops)
 	return
 
