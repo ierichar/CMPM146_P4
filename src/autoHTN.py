@@ -39,6 +39,7 @@ def make_operator (rule):
 			#print("Value:", rule[element][item])
 	def operator (state, ID):
 		# your code here
+		function.__name__ = "op_" + rule
 		for element in rule:
 			if element == 'Produces':
 				item = rule[element]
@@ -82,12 +83,11 @@ def declare_operators (data):
 	ops = []
 	for element in data["Recipes"]:
 		holder = make_operator(data["Recipes"][element])
-		print(holder)
+		holder.__name__ = "op_" + element
+		print(holder.__name__)
 		ops.append(holder)
-	print(len(ops))
-	for op in ops:
-		print(op)
-	pyhop.declare_operators(op for op in ops)
+	#print(len(ops))
+	pyhop.declare_operators(*ops)
 	return
 
 def add_heuristic (data, ID):
@@ -137,7 +137,7 @@ if __name__ == '__main__':
 	add_heuristic(data, 'agent')
 
 	pyhop.print_operators()
-	#pyhop.print_methods()
+	pyhop.print_methods()
 
 	# Hint: verbose output can take a long time even if the solution is correct; 
 	# try verbose=1 if it is taking too long
