@@ -126,6 +126,7 @@ def add_heuristic (data, ID):
 	# e.g. def heuristic2(...); pyhop.add_check(heuristic2)
 	def heuristic (state, curr_task, tasks, plan, depth, calling_stack):
 		# your code here
+		
 		return False # if True, prune this branch
 
 	pyhop.add_check(heuristic)
