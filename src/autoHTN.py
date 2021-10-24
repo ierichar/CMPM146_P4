@@ -16,18 +16,19 @@ def produce (state, ID, item):
 pyhop.declare_methods ('produce', produce)
 
 def make_method (name, rule):
-	subTasks = []
 	def method (state, ID):
 		# your code here
+		subTasks = []
 		for prereq in rule["Recipes"][name]:
 			if prereq == "Requires":
-				reqItem = rule["Recipes"][name][prereq]
-				subTasks.append(('have_enough', ID, rule["Recipes"][name][prereq], rule["Recipes"][name][prereq][reqItem]))
+				reqItem = next(iter(rule["Recipes"][name][prereq]))
+				subTasks.append(('have_enough', ID, reqItem, rule["Recipes"][name][prereq][reqItem]))
+				
 			if prereq == "Consumes":
 				for item in rule["Recipes"][name][prereq]:
-					subTasks.append(('have_enough', ID, rule["Recipes"][name][prereq], rule["Recipes"][name][prereq][item]))
+					subTasks.append(('have_enough', ID, item, rule["Recipes"][name][prereq][item]))
 		subTasks.append(('op_'+name, ID))
-		return
+		return subTasks
 		
 	return method
 
@@ -46,7 +47,7 @@ def declare_methods (data):
 					if item == next(iter(data["Recipes"][recipe][category])):
 						#print(item)
 						newMethod = make_method(recipe, data)
-						newMethod.__name__ = "craft_"+item
+						newMethod.__name__ = recipe
 						methods.append(newMethod)
 		name = "produce_" + item
 		pyhop.declare_methods(name, *methods)
@@ -60,7 +61,7 @@ def declare_methods (data):
 					if tool == next(iter(data["Recipes"][recipe][category])):
 						#print(item)
 						newMethod = make_method(recipe, data)
-						newMethod.__name__ = "craft_"+tool
+						newMethod.__name__ = recipe
 						methods.append(newMethod)
 		name = "produce_" + tool
 		pyhop.declare_methods(name, *methods)
@@ -163,7 +164,7 @@ if __name__ == '__main__':
 
 	declare_operators(data)
 	declare_methods(data)
-	add_heuristic(data, 'agent')
+	#add_heuristic(data, 'agent')
 
 	pyhop.print_operators()
 	pyhop.print_methods()
