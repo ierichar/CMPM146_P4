@@ -39,7 +39,8 @@ def declare_methods (data):
 
 	# your code here
 	# hint: call make_method, then declare the method to pyhop using pyhop.declare_methods('foo', m1, m2, ..., mk)
-	all_recipes = dict() # key=timevalue, val=methodlist
+	#all_recipes = dict() # key=timevalue, val=methodlist
+	methods = []
 	for item in data["Items"]:
 		name = None
 		for recipe in data["Recipes"]:
@@ -47,17 +48,19 @@ def declare_methods (data):
 			for category in data["Recipes"][recipe]:
 				if category == "Produces":
 					if item == next(iter(data["Recipes"][recipe][category])):
-						if (item == "wood"): print(recipe)
 						newMethod = make_method(recipe, data)
-						print(newMethod)
-						newMethod.__name__ = recipe.replace(" ", "_")
-						if (newMethod is not None):
-							timeKey = data["Recipes"][recipe]["Time"]
-							all_recipes.update({timeKey: newMethod})
-						else: print("new method is None")
+						newMethod.__name__ = recipe
+						if methods == []:
+							methods.append(newMethod)
+						else:
+							for method in methods:
+								if (data["Recipes"][method.__name__]["Time"] <= data["Recipes"][recipe]["Time"]) and newMethod not in methods:
+									methods.insert(methods.index(method), newMethod)
+							if newMethod not in methods:
+								methods.append(newMethod)
 		name = "produce_" + item
-		pyhop.declare_methods(name, *list(all_recipes.values()))
-		all_recipes.clear()
+		pyhop.declare_methods(name, *methods)
+		methods.clear()
 	
 	for tool in data["Tools"]:
 		name = None
@@ -67,56 +70,46 @@ def declare_methods (data):
 				if category == "Produces":
 					if tool == next(iter(data["Recipes"][recipe][category])):
 						newMethod = make_method(recipe, data)
-						newMethod.__name__ = recipe.replace(" ", "_")
-						if (newMethod is not None):
-							timeKey = data["Recipes"][recipe]["Time"]
-							all_recipes.update({timeKey: newMethod})
+						newMethod.__name__ = recipe
+						if methods == []:
+							methods.append(newMethod)
+						else:
+							for method in methods:
+								if (data["Recipes"][method.__name__]["Time"] <= data["Recipes"][recipe]["Time"]) and newMethod not in methods:
+									methods.insert(methods.index(method.__name__), newMethod)
+							if newMethod not in methods:
+								methods.append(newMethod)
 		name = "produce_" + tool
-		pyhop.declare_methods(name, *list(all_recipes.values()))
-		all_recipes.clear()
+		pyhop.declare_methods(name, *methods)
+		methods.clear()
+
 	return
 
 def make_operator (rule):
 	def operator (state, ID):
 		# your code here
-		#function.__name__ = "op_" + rule
 		for element in rule:
 			if element == 'Produces':
 				item = rule[element]
 				item_name = next(iter(rule[element]))
 				value = rule[element][item_name]
-				# if not getattr(state,item_name)[ID]:
-				# 	setattr(state, item_name, {ID: 0})
-				# else:
-				# 	
-				print("current item state:", getattr(state, item_name)[ID])
 				setattr(state, item_name, {ID: getattr(state, item_name)[ID] + value})
-				
-				print("current item state:", getattr(state, item_name)[ID])
 
 			elif element == 'Requires':
 				for item in rule[element]:
 					value = rule[element][item]
-					# if not getattr(state,item)[ID]:
-					# 	setattr(state, item, {ID: 0})
 					if getattr(state, item)[ID] >= value:
 						setattr(state, item, {ID: value})
 					else:
 						return False
 
-					print("current item state:", getattr(state, item)[ID])
-
 			elif element == 'Consumes':
 				for item in rule[element]:
 					value = rule[element][item]
-					# if not getattr(state,item)[ID]:
-					# 	setattr(state, item, {ID: 0})
 					if getattr(state, item)[ID] >= value:
 						setattr(state, item, {ID: getattr(state, item)[ID] - value})
 					else:
 						return False
-				
-					print("current item state:", getattr(state, item)[ID])
 
 			elif element == "Time":
 				value = rule[element]
@@ -124,7 +117,6 @@ def make_operator (rule):
 					setattr(state, "time", {ID: getattr(state, "time")[ID] - value})
 				else:
 					return False
-				print("current item state:", getattr(state, "time")[ID])
 		return state
 	return operator
 
@@ -146,35 +138,47 @@ def add_heuristic (data, ID):
 
 	# Heuristic determines whether or not we want to cut off an operator before
 	# going to the following method
-	# def heuristic (state, curr_task, tasks, plan, depth, calling_stack):
-	# 	# only every need 1 tool in scenario
-	# 	for tool in data["Tools"]:
-	# 		if getattr(state, tool)[ID] > 1:
-	# 			return True
-	# 	return False # if True, prune this branch
-	# def heuristic2 (state, curr_task, tasks, plan, depth, calling_stack):
-	# 	# can only ever consume 8 items in a given recipe (9 in Minecraft)
-	# 	for item in data["Items"]:
-	# 		if item != "rail":
-	# 			#print("h2 item:", item)
-	# 			#print("h2 state, item:", getattr(state, item)[ID])
-	# 			if getattr(state, item)[ID] > 9:
-	# 				return True
-	# 	return False
+	def heuristic (state, curr_task, tasks, plan, depth, calling_stack):
+		# only every need 1 tool in scenario
+		for tool in data["Tools"]:
+			if getattr(state, tool)[ID] > 1:
+				return True
+		return False # if True, prune this branch
+	def heuristic2 (state, curr_task, tasks, plan, depth, calling_stack):
+		# can only ever consume 8 items in a given recipe (9 in Minecraft)
+		for item in data["Items"]:
+			if item != "rail":
+				#print("h2 item:", item)
+				#print("h2 state, item:", getattr(state, item)[ID])
+				if getattr(state, item)[ID] > 9:
+					return True
+		return False
 	# potential heurstic3: high priority to low 
 	# 		iron -> stone -> wood -> punch 
 	def heuristic3 (state, curr_task, tasks, plan, depth, calling_stack):
-		if (curr_task == "produce_wood"):
-			tasks.append("craft iron axe")
+		if (curr_task == [('have_enough', 'agent', 'wood', 1)] and [('have_enough', 'agent', 'wood', 1)] in calling_stack):
+			tasks.append("punch for wood")
+			return True
 		return False
 	# potential heurstic4: internally prevent circular calls to same task
 	def heuristic4 (state, curr_task, tasks, plan, depth, calling_stack):
-		if (curr_task in calling_stack):
+		if ("produce_wood" not in tasks):
+			print("H4 CURRENT TASK:", curr_task)
+			print("H4 TASKS:", tasks)
+			print("H4 PLAN:", plan)
+			print("H4 DEPTH:", depth)
+			print("H4 CALLING STACK:", calling_stack)
 			return True
 		return False
-	# pyhop.add_check(heuristic)
-	# pyhop.add_check(heuristic2)
-	pyhop.add_check(heuristic4)
+	# NEVER make an iron_axe
+	def heurstic5 (state, curr_task, tasks, plan, depth, calling_stack):
+
+		return False
+
+	pyhop.add_check(heuristic)
+	pyhop.add_check(heuristic2)
+	pyhop.add_check(heuristic3)
+	#pyhop.add_check(heuristic4)
 
 def set_up_state (data, ID, time=0):
 	state = pyhop.State('state')
