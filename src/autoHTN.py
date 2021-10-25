@@ -124,12 +124,27 @@ def add_heuristic (data, ID):
 	# prune search branch if heuristic() returns True
 	# do not change parameters to heuristic(), but can add more heuristic functions with the same parameters: 
 	# e.g. def heuristic2(...); pyhop.add_check(heuristic2)
-	def heuristic (state, curr_task, tasks, plan, depth, calling_stack):
-		# your code here
-		
-		return False # if True, prune this branch
 
+	# Heuristic determines whether or not we want to cut off an operator before
+	# going to the following method
+	def heuristic (state, curr_task, tasks, plan, depth, calling_stack):
+		# only every need 1 tool in scenario
+		for tool in data["Tools"]:
+			if getattr(state, tool)[ID] > 1:
+				return True
+		return False # if True, prune this branch
+	def heuristic2 (state, curr_task, tasks, plan, depth, calling_stack):
+		# can only ever consume 8 items in a given recipe (9 in Minecraft)
+		for item in data["Items"]:
+			if item != "rail":
+				if getattr(state, item)[ID] > 9:
+					return True
+		return False
+	# potential heurstic3: high priority to low 
+	# 		iron -> stone -> wood -> punch 
+		
 	pyhop.add_check(heuristic)
+	pyhop.add_check(heuristic2)
 
 
 def set_up_state (data, ID, time=0):
@@ -165,12 +180,12 @@ if __name__ == '__main__':
 
 	declare_operators(data)
 	declare_methods(data)
-	#add_heuristic(data, 'agent')
+	add_heuristic(data, 'agent')
 
-	pyhop.print_operators()
-	pyhop.print_methods()
+	#pyhop.print_operators()
+	#pyhop.print_methods()
 
 	# Hint: verbose output can take a long time even if the solution is correct; 
 	# try verbose=1 if it is taking too long
-	pyhop.pyhop(state, goals, verbose=3)
-	# pyhop.pyhop(state, [('have_enough', 'agent', 'cart', 1),('have_enough', 'agent', 'rail', 20)], verbose=3)
+	#pyhop.pyhop(state, goals, verbose=3)
+	pyhop.pyhop(state, [('have_enough', 'agent', 'cart', 1),('have_enough', 'agent', 'rail', 20)], verbose=3)
