@@ -190,9 +190,9 @@ def print_operators(olist=operators):
 
 def print_methods(mlist=methods):
     """Print out a table of what the methods are for each task"""
-    print('{:<14}{}'.format('TASK:','METHODS:'))
+    print('{:<24}{}'.format('TASK:','METHODS:'))
     for task in mlist:
-        print('{:<14}'.format(task) + ', '.join([f.__name__ for f in mlist[task]]))
+        print('{:<24}'.format(task) + ', '.join([f.__name__ for f in mlist[task]]))
 
 ############################################################
 # The actual planner
