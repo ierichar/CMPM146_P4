@@ -1,0 +1,25 @@
+CMPM 146 - P4
+Custom Case
+Ian Richardson and Joseph Carter
+
+ "Initial" {
+ },
+ "Goal": {
+    "ingot" : 17,
+    "rail" : 1,
+    "cart" : 1,
+    "wooden_pickaxe" : 1,
+    "wood" : 7
+ },
+
+given recipe time cost = 300
+15 seconds real time with verbose=1
+longer than a minute with verbose=2
+longer than several minutes with verbose=3
+
+** pyhop, verbose=1: **
+   state = state
+   tasks = [('have_enough', 'agent', 'ingot', 17), ('have_enough', 'agent', 'rail', 1), ('have_enough', 'agent', 'cart', 1), ('have_enough', 'agent', 'wooden_pickaxe', 1), ('have_enough', 'agent', 'wood', 7)]
+
+** result = [('op_punch for wood', 'agent'), ('op_craft plank', 'agent'), ('op_craft bench', 'agent'), ('op_punch for wood', 'agent'), ('op_craft plank', 'agent'), ('op_craft stick', 'agent'), ('op_craft stick', 'agent'), ('op_punch for wood', 'agent'), ('op_craft plank', 'agent'), ('op_craft stick', 'agent'), ('op_punch for wood', 'agent'), ('op_craft plank', 'agent'), ('op_craft stick', 'agent'), ('op_craft wooden_pickaxe at bench', 'agent'), ('op_wooden_pickaxe for cobble', 'agent'), ('op_wooden_pickaxe for cobble', 'agent'), ('op_wooden_pickaxe for cobble', 'agent'), ('op_craft stone_pickaxe at bench', 'agent'), ('op_stone_pickaxe for cobble', 'agent'), ('op_stone_pickaxe for cobble', 'agent'), ('op_stone_pickaxe for cobble', 'agent'), ('op_stone_pickaxe for cobble', 'agent'), ('op_stone_pickaxe for cobble', 'agent'), ('op_stone_pickaxe for cobble', 'agent'), ('op_stone_pickaxe for cobble', 'agent'), ('op_stone_pickaxe for cobble', 'agent'), ('op_craft furnace at bench', 'agent'), ('op_stone_pickaxe for coal', 'agent'), ('op_stone_pickaxe for ore', 'agent'), ('op_smelt ore in furnace', 'agent'), ('op_stone_pickaxe for coal', 'agent'), ('op_stone_pickaxe for ore', 'agent'), ('op_smelt ore in furnace', 'agent'), ('op_stone_pickaxe for coal', 'agent'), ('op_stone_pickaxe for ore', 'agent'), ('op_smelt ore in furnace', 'agent'), ('op_stone_pickaxe for coal', 'agent'), ('op_stone_pickaxe for ore', 'agent'), ('op_smelt ore in furnace', 'agent'), ('op_stone_pickaxe for coal', 'agent'), ('op_stone_pickaxe for ore', 'agent'), ('op_smelt ore in furnace', 'agent'), ('op_stone_pickaxe for coal', 'agent'), ('op_stone_pickaxe for ore', 'agent'), ('op_smelt ore in furnace', 'agent'), ('op_stone_pickaxe for coal', 'agent'), ('op_stone_pickaxe for ore', 'agent'), ('op_smelt ore in furnace', 'agent'), ('op_stone_pickaxe for coal', 'agent'), ('op_stone_pickaxe for ore', 'agent'), ('op_smelt ore in furnace', 'agent'), ('op_stone_pickaxe for coal', 'agent'), ('op_stone_pickaxe for ore', 'agent'), ('op_smelt ore in furnace', 'agent'), ('op_stone_pickaxe for coal', 'agent'), ('op_stone_pickaxe for ore', 'agent'), ('op_smelt ore in furnace', 'agent'), ('op_stone_pickaxe for coal', 'agent'), ('op_stone_pickaxe for ore', 'agent'), ('op_smelt ore in furnace', 'agent'), ('op_stone_pickaxe for coal', 'agent'), ('op_stone_pickaxe for ore', 'agent'), ('op_smelt ore in furnace', 'agent'), ('op_stone_pickaxe for coal', 'agent'), ('op_stone_pickaxe for ore', 'agent'), ('op_smelt ore in furnace', 'agent'), ('op_stone_pickaxe for coal', 'agent'), ('op_stone_pickaxe for ore', 'agent'), ('op_smelt ore in furnace', 'agent'), ('op_stone_pickaxe for coal', 'agent'), ('op_stone_pickaxe for ore', 'agent'), ('op_smelt ore in furnace', 'agent'), ('op_stone_pickaxe for coal', 'agent'), ('op_stone_pickaxe for ore', 'agent'), ('op_smelt ore in furnace', 'agent'), ('op_stone_pickaxe for coal', 'agent'), ('op_stone_pickaxe for ore', 'agent'), ('op_smelt ore in furnace', 'agent'), ('op_craft rail at bench', 'agent'), 
+('op_craft cart at bench', 'agent'), ('op_punch for wood', 'agent'), ('op_punch for wood', 'agent'), ('op_punch for wood', 'agent'), ('op_punch for wood', 'agent'), ('op_punch for wood', 'agent'), ('op_punch for wood', 'agent'), ('op_punch for wood', 'agent')]
