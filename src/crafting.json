@@ -23,7 +23,11 @@
  "Initial": {
  },
  "Goal": {
-   "wood": 2
+    "ingot" : 17,
+    "rail" : 1,
+    "cart" : 1,
+    "wooden_pickaxe" : 1,
+    "wood" : 7
  },
  "Recipes": {
    "iron_axe for wood": {

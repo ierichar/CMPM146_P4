@@ -1,4 +1,5 @@
 from os import stat
+from sys import settrace
 import pyhop
 import json
 
@@ -138,86 +139,39 @@ def add_heuristic (data, ID):
 
 	# Heuristic determines whether or not we want to cut off an operator before
 	# going to the following method
+
 	def heuristic (state, curr_task, tasks, plan, depth, calling_stack):
-		# only every need 1 tool in scenario
-		for tool in data["Tools"]:
-			if getattr(state, tool)[ID] > 1 or [("op_craft_"+tool.replace(" ", "_"), ID)] in calling_stack:
-				print("H1 called")
-				return True
-		return False # if True, prune this branch
-	def heuristic2 (state, curr_task, tasks, plan, depth, calling_stack):
 		# can only ever consume 8 items in a given recipe (9 in Minecraft)
 		for item in data["Items"]:
 			if item != "rail":
-				#print("h2 item:", item)
-				#print("h2 state, item:", getattr(state, item)[ID])
-				if getattr(state, item)[ID] > 9:
-					print("H2 called")
+				if getattr(state, item)[ID] > 18:
 					return True
 		return False
-	# H3: if HTN is trying to make wood and looks again to find wood, then punch for wood
+
+
+	def heuristic2 (state, curr_task, tasks, plan, depth, calling_stack):
+		if depth == 0:
+			for tool in data["Tools"]:
+				made_tool = "made_"+tool
+				setattr(state, made_tool, {ID: 0})
+		return False
+	
 	def heuristic3 (state, curr_task, tasks, plan, depth, calling_stack):
-		if (curr_task == [('have_enough', 'agent', 'wood', 1)] and [('have_enough', 'agent', 'wood', 1)] in calling_stack):
-			tasks.append("punch for wood", ID)
-			print("H3 called")
-			return True
-		elif ([('have_enough', 'agent', 'wooden_axe', 1)] in tasks and [('have_enough', 'agent', 'wooden_axe', 1)] in calling_stack):
-			print("H3 called")
-			return True
-		elif ([('have_enough', 'agent', 'stone_axe', 1)] in tasks and [('have_enough', 'agent', 'stone_axe', 1)] in calling_stack):
-			print("H3 called")
-			return True
-		elif ([('have_enough', 'agent', 'iron_axe', 1)] in tasks and [('have_enough', 'agent', 'iron_axe', 1)] in calling_stack):
-			print("H3 called")
-			return True
-		return False
-	# potential heurstic4: internally prevent circular calls to same task
-	#TODO------------
-	#make list of strings with name of tasks that should never be called twice in a single plan
-	def heuristic4 (state, curr_task, tasks, plan, depth, calling_stack):
-		if (curr_task in calling_stack):
-			print("H4 called")
-			# print("H4 CURRENT TASK:", curr_task)
-			# print("H4 TASKS:", tasks)
-			# print("H4 PLAN:", plan)
-			# print("H4 DEPTH:", depth)
-			# print("H4 CALLING STACK:", calling_stack)
-			return True
-		return False
-	# NEVER make an iron_axe
-	def heurstic5 (state, curr_task, tasks, plan, depth, calling_stack):
-		#if depth >= 30:
-		#	print("CUT OFF")
-		#	return True
-		#tool_ops = ['op_craft wooden_pickaxe at bench', 'op_craft stone_pickaxe at bench', 'op_craft iron_pickaxe at bench', 'op_craft furnace at bench',
-		#		    'op_craft iron_axe at bench', 'op_craft wooden_axe at bench', 'op_craft stone_axe at bench', 'op_craft bench']
-		#tool_ops = ['produce_wooden_pickaxe', 'produce_stone_pickaxe', 'produce_iron_pickaxe', 'produce_furnace',
-		#		    'produce_iron_axe', 'produce_wooden_axe', 'produce_stone_axe', 'produce_bench']
-		tool_ops = []
-		item_ops = []
-		for tool in data["Tools"]:
-			tool_ops.append("produce_"+tool)
-		for item in data["Items"]:
-			item_ops.append("produce_"+item)
-		#print("CURR_TASK:",curr_task)
-		#print("CALLING STACK:", calling_stack)
-		for tool_name in tool_ops:
-			op = (tool_name, 'agent')
-			#print("HEURISTIC 5: checking if[", tool_name,"] already queued")
-			#print("TOOL NAME:", tool_name)
-			if (curr_task in calling_stack) and curr_task == op:
-				print("PRUNING:", curr_task)
-				print("TASKS:", tasks)
-				print("CALLING STACK:", calling_stack)
-				return True
-
+		if curr_task[0] == 'produce':
+			item = curr_task[2]
+			for tool in data["Tools"]:
+				if item == tool:
+					made_check = "made_"+tool
+					if (getattr(state, made_check)[ID] != 0):
+						return True
+					else:
+						setattr(state, made_check, {ID: getattr(state,made_check)[ID] + 1})
+						return False
 		return False
 
-	#pyhop.add_check(heuristic)
-	#pyhop.add_check(heuristic2)
-	#pyhop.add_check(heuristic3)
-	#pyhop.add_check(heuristic4)
-	pyhop.add_check(heurstic5)
+	pyhop.add_check(heuristic)
+	pyhop.add_check(heuristic2)
+	pyhop.add_check(heuristic3)
 
 def set_up_state (data, ID, time=0):
 	state = pyhop.State('state')
@@ -247,7 +201,7 @@ if __name__ == '__main__':
 	with open(rules_filename) as f:
 		data = json.load(f)
 	#print(data)
-	state = set_up_state(data, 'agent', time=239) # allot time here
+	state = set_up_state(data, 'agent', time=300) # allot time here
 	goals = set_up_goals(data, 'agent')
 
 	declare_operators(data)

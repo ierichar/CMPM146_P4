@@ -1,0 +1,11 @@
+CMPM 146 - P4
+HTN Planning for Minecraft
+Ian Richardson and Joseph Carter
+
+We decided to implement three heuristics that limits the bot's
+inventory, its ability to check whether or not it made a tool,
+as well as initializing the made_tool states. The main
+heuristic restricts the bot from looping between a set of
+operations and methods to produce a certain item. Without the
+heuristic, the bot would continually try to produce items with
+tools that also require said item.
