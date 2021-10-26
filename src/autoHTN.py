@@ -29,7 +29,7 @@ def make_method (name, rule):
 				for item in rule["Recipes"][name][prereq]:
 					subTasks.append(('have_enough', ID, item, rule["Recipes"][name][prereq][item]))
 			
-		subTasks.append(('op_'+name.replace(" ", "_"), ID))
+		subTasks.append(('op_'+name, ID))
 		return subTasks
 	return method
 
@@ -54,7 +54,7 @@ def declare_methods (data):
 							methods.append(newMethod)
 						else:
 							for method in methods:
-								if (data["Recipes"][method.__name__]["Time"] <= data["Recipes"][recipe]["Time"]) and newMethod not in methods:
+								if (data["Recipes"][method.__name__]["Time"] >= data["Recipes"][recipe]["Time"]) and newMethod not in methods:
 									methods.insert(methods.index(method), newMethod)
 							if newMethod not in methods:
 								methods.append(newMethod)
@@ -75,7 +75,7 @@ def declare_methods (data):
 							methods.append(newMethod)
 						else:
 							for method in methods:
-								if (data["Recipes"][method.__name__]["Time"] <= data["Recipes"][recipe]["Time"]) and newMethod not in methods:
+								if (data["Recipes"][method.__name__]["Time"] >= data["Recipes"][recipe]["Time"]) and newMethod not in methods:
 									methods.insert(methods.index(method.__name__), newMethod)
 							if newMethod not in methods:
 								methods.append(newMethod)
@@ -126,7 +126,7 @@ def declare_operators (data):
 	ops = []
 	for element in data["Recipes"]:
 		holder = make_operator(data["Recipes"][element])
-		holder.__name__ = "op_" + element.replace(" ", "_")
+		holder.__name__ = "op_" + element
 		ops.append(holder)
 	pyhop.declare_operators(*ops)
 	return
@@ -172,6 +172,8 @@ def add_heuristic (data, ID):
 			return True
 		return False
 	# potential heurstic4: internally prevent circular calls to same task
+	#TODO------------
+	#make list of strings with name of tasks that should never be called twice in a single plan
 	def heuristic4 (state, curr_task, tasks, plan, depth, calling_stack):
 		if (curr_task in calling_stack):
 			print("H4 called")
@@ -183,18 +185,39 @@ def add_heuristic (data, ID):
 			return True
 		return False
 	# NEVER make an iron_axe
-	def heuristic5 (state, curr_task, tasks, plan, depth, calling_stack):
-		if depth < 4:
-			curr_task = ("punch for wood", ID)
-			return True
+	def heurstic5 (state, curr_task, tasks, plan, depth, calling_stack):
+		#if depth >= 30:
+		#	print("CUT OFF")
+		#	return True
+		#tool_ops = ['op_craft wooden_pickaxe at bench', 'op_craft stone_pickaxe at bench', 'op_craft iron_pickaxe at bench', 'op_craft furnace at bench',
+		#		    'op_craft iron_axe at bench', 'op_craft wooden_axe at bench', 'op_craft stone_axe at bench', 'op_craft bench']
+		#tool_ops = ['produce_wooden_pickaxe', 'produce_stone_pickaxe', 'produce_iron_pickaxe', 'produce_furnace',
+		#		    'produce_iron_axe', 'produce_wooden_axe', 'produce_stone_axe', 'produce_bench']
+		tool_ops = []
+		item_ops = []
+		for tool in data["Tools"]:
+			tool_ops.append("produce_"+tool)
+		for item in data["Items"]:
+			item_ops.append("produce_"+item)
+		#print("CURR_TASK:",curr_task)
+		#print("CALLING STACK:", calling_stack)
+		for tool_name in tool_ops:
+			op = (tool_name, 'agent')
+			#print("HEURISTIC 5: checking if[", tool_name,"] already queued")
+			#print("TOOL NAME:", tool_name)
+			if (curr_task in calling_stack) and curr_task == op:
+				print("PRUNING:", curr_task)
+				print("TASKS:", tasks)
+				print("CALLING STACK:", calling_stack)
+				return True
+
 		return False
 
 	#pyhop.add_check(heuristic)
 	#pyhop.add_check(heuristic2)
-	pyhop.add_check(heuristic3)
-	pyhop.add_check(heuristic4)
-	#pyhop.add_check(heuristic5)
-
+	#pyhop.add_check(heuristic3)
+	#pyhop.add_check(heuristic4)
+	pyhop.add_check(heurstic5)
 
 def set_up_state (data, ID, time=0):
 	state = pyhop.State('state')
