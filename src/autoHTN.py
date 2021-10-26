@@ -141,7 +141,8 @@ def add_heuristic (data, ID):
 	def heuristic (state, curr_task, tasks, plan, depth, calling_stack):
 		# only every need 1 tool in scenario
 		for tool in data["Tools"]:
-			if getattr(state, tool)[ID] > 1:
+			if getattr(state, tool)[ID] > 1 or [("op_craft_"+tool.replace(" ", "_"), ID)] in calling_stack:
+				print("H1 called")
 				return True
 		return False # if True, prune this branch
 	def heuristic2 (state, curr_task, tasks, plan, depth, calling_stack):
@@ -151,25 +152,36 @@ def add_heuristic (data, ID):
 				#print("h2 item:", item)
 				#print("h2 state, item:", getattr(state, item)[ID])
 				if getattr(state, item)[ID] > 9:
+					print("H2 called")
 					return True
 		return False
-	# potential heurstic3: high priority to low 
-	# 		iron -> stone -> wood -> punch 
+	# H3: if HTN is trying to make wood and looks again to find wood, then punch for wood
 	def heuristic3 (state, curr_task, tasks, plan, depth, calling_stack):
 		if (curr_task == [('have_enough', 'agent', 'wood', 1)] and [('have_enough', 'agent', 'wood', 1)] in calling_stack):
-			tasks.append("punch for wood")
+			tasks.append("punch for wood", ID)
+			print("H3 called")
+			return True
+		elif ([('have_enough', 'agent', 'wooden_axe', 1)] in tasks and [('have_enough', 'agent', 'wooden_axe', 1)] in calling_stack):
+			print("H3 called")
+			return True
+		elif ([('have_enough', 'agent', 'stone_axe', 1)] in tasks and [('have_enough', 'agent', 'stone_axe', 1)] in calling_stack):
+			print("H3 called")
+			return True
+		elif ([('have_enough', 'agent', 'iron_axe', 1)] in tasks and [('have_enough', 'agent', 'iron_axe', 1)] in calling_stack):
+			print("H3 called")
 			return True
 		return False
 	# potential heurstic4: internally prevent circular calls to same task
 	#TODO------------
 	#make list of strings with name of tasks that should never be called twice in a single plan
 	def heuristic4 (state, curr_task, tasks, plan, depth, calling_stack):
-		if ("produce_wood" not in tasks):
-			print("H4 CURRENT TASK:", curr_task)
-			print("H4 TASKS:", tasks)
-			print("H4 PLAN:", plan)
-			print("H4 DEPTH:", depth)
-			print("H4 CALLING STACK:", calling_stack)
+		if (curr_task in calling_stack):
+			print("H4 called")
+			# print("H4 CURRENT TASK:", curr_task)
+			# print("H4 TASKS:", tasks)
+			# print("H4 PLAN:", plan)
+			# print("H4 DEPTH:", depth)
+			# print("H4 CALLING STACK:", calling_stack)
 			return True
 		return False
 	# NEVER make an iron_axe
